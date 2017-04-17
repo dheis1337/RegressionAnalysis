@@ -131,7 +131,7 @@ $(document).ready(function () {
 <h3>3.2 Testing Examples</h3>
 <div id="test-of-all-the-predictors" class="section level4">
 <h4>Test of all the predictors</h4>
-<p>This test is useful to determine if any of the predictors are useful. In this test, the full model is represented by <span class="math inline">\(y = X \beta + \epsilon\)</span>, and the reduced model be <span class="math inline">\(y = \mu + \epsilon\)</span> where we estimate by the mean of the response. The corresponding null and alternate hypotheses is:</p>
+<p>This test is useful to determine if any of the predictors are useful. In this test, the full model <span class="math inline">\(\Omega\)</span> is represented by <span class="math inline">\(y = X \beta + \epsilon\)</span>, and the reduced model <span class="math inline">\(\omega\)</span> be <span class="math inline">\(y = \mu + \epsilon\)</span> where we estimate <span class="math inline">\(\mu\)</span> by the mean of the response. The corresponding null and alternate hypotheses is:</p>
 <p><span class="math display">\[ H_0: \beta_1 = ... = \beta_{p - 1} = 0 \]</span> <span class="math display">\[ H_A: \textrm{at least one}\ \beta_i \neq 0 \]</span></p>
 <p>In order to conduct this test in R, we fit the two models and then run the <code>anova()</code> function, specifying the reduced model as the first argument, follwed by the larger model.</p>
 <pre class="r"><code>data(gala)
@@ -152,7 +152,7 @@ anova(lil.mod, big.mod)</code></pre>
 </div>
 <div id="testing-one-predictor" class="section level4">
 <h4>Testing one predictor</h4>
-<p>The next test is to determine if one particular predictor can be dropped from the model. Thus, the null hypothesis is $ H_0: _i = 0 $. In this test,  is a full model, and is the full model, less the predictor in question. Using the <code>gala</code> data set, we can test to see if the <code>Area</code> predictor should be included in the model.</p>
+<p>The next test is to determine if one particular predictor can be dropped from the model. Thus, the null hypothesis is <span class="math inline">\(H_0: \beta_i = 0\)</span>. In this test,  is a full model, and <span class="math inline">\(\omega\)</span> is the full model, less the predictor in question. Using the <code>gala</code> data set, we can test to see if the <code>Area</code> predictor should be included in the model.</p>
 <pre class="r"><code>lil.mod &lt;- lm(Species ~ Nearest + Adjacent + Scruz + Elevation, data = gala)
 big.mod &lt;- lm(Species ~ Area + Nearest + Adjacent + Scruz + Elevation, data = gala)
 
@@ -218,7 +218,7 @@ anova(lil.mod, big.mod)</code></pre>
 </div>
 <div id="test-we-cant-do" class="section level4">
 <h4>Test we can’t do</h4>
-<p>We cannot test non-linear hypothesis, such as $ H_0: _j_k = 1 $ using the F-test method. We cannot also not test models where one is not a subspace of another.</p>
+<p>We cannot test non-linear hypothesis, such as <span class="math inline">\(H_0: \beta_j\beta_k = 1\)</span> using the F-test method. We cannot also not test models where one is not a subspace of another.</p>
 </div>
 </div>
 <div id="permutation-testing" class="section level3">
@@ -237,7 +237,7 @@ for (i in 1:n) {
 }
 
 mean(fstats &gt; lms$fstat[1])</code></pre>
-<pre><code>## [1] 0.57</code></pre>
+<pre><code>## [1] 0.538</code></pre>
 <p>We received a p-value of .55, so we must fail to reject the null hypothesis that there is no relationship between the response and the predictors.</p>
 <p>We can also conduct tests that involve just one predictor. In this case, we simply call the <code>sample()</code> function on the predictor in question.</p>
 <pre class="r"><code>lmod &lt;- lm(Species ~ Nearest + Scruz, data = gala)
@@ -252,12 +252,12 @@ for (i in 1:n) {
 }
 
 mean(abs(tstats) &gt; abs(lms$coef[3,3]))</code></pre>
-<pre><code>## [1] 0.27</code></pre>
+<pre><code>## [1] 0.253</code></pre>
 <p>Our test resulted in a p-value of .28, so we thus have no evidence to conclude that the predictor Scruz has no relationship with the response.</p>
 </div>
 <div id="confidence-intervals-for-parameters" class="section level3">
 <h3>Confidence Intervals for Parameters</h3>
-<p>Confidence intervals provide an alternative way of expressing the uncertainty in our estimates of . They are given by the funcntion</p>
+<p>Confidence intervals provide an alternative way of expressing the uncertainty in our estimates of <span class="math inline">\(\beta\)</span>. They are given by the funcntion</p>
 <p><span class="math display">\[ \hat{\beta} \pm t_{n-p}^{\alpha/2}se(\hat{\beta}) \]</span></p>
 <p>Using a given model, we can compute the CIs for a given predictor using the <code>qt()</code> function, providing the probabilites and the degrees of freedom of the model which can be found in the <code>summary()</code> output of our function.</p>
 <pre class="r"><code>summary(big.mod)</code></pre>
@@ -284,12 +284,12 @@ mean(abs(tstats) &gt; abs(lms$coef[3,3]))</code></pre>
 ## Residual standard error: 60.98 on 24 degrees of freedom
 ## Multiple R-squared:  0.7658, Adjusted R-squared:  0.7171 
 ## F-statistic:  15.7 on 5 and 24 DF,  p-value: 6.838e-07</code></pre>
-<p>Our degrees of freedom are $ n - p $, in this case $ 30 - 6 = 24 $. Taking the <code>Estimate</code> from the <code>summary()</code> output for the <code>Area</code> predictor of -.02394, and the <code>Std. Error</code> supplied in the same ouput, we can get the CIs in the following manner.</p>
+<p>Our degrees of freedom are <span class="math inline">\(n - p\)</span>, in this case <span class="math inline">\(30 - 6 = 24\)</span>. Taking the <code>Estimate</code> from the <code>summary()</code> output for the <code>Area</code> predictor of -.02394, and the <code>Std. Error</code> supplied in the same ouput, we can get the CIs in the following manner.</p>
 <pre class="r"><code>qt(.975, 30 - 6)</code></pre>
 <pre><code>## [1] 2.063899</code></pre>
 <pre class="r"><code>-.02394 + c(-1, 1) * 2.0639 * .02242</code></pre>
 <pre><code>## [1] -0.07021264  0.02233264</code></pre>
-<p>If the interval contains 0, this indicates the null hypothesis of $ H_0: _{Area} = 0 would not be rejected at the 5% level. Even more, any value-based null hypothesis lying within the interval would not be rejected. We can do a similar confidence interval for the <code>Adjacent</code> predictor.</p>
+<p>If the interval contains 0, this indicates the null hypothesis of <span class="math inline">\(H_0: \beta_{Area} = 0\)</span> would not be rejected at the 5% level. Even more, any value-based null hypothesis lying within the interval would not be rejected. We can do a similar confidence interval for the <code>Adjacent</code> predictor.</p>
 <pre class="r"><code>qt(.975, 30 - 6)</code></pre>
 <pre><code>## [1] 2.063899</code></pre>
 <pre class="r"><code>-.07480 + c(-1, 1) * 2.0639 * .01770</code></pre>
@@ -312,8 +312,35 @@ mean(abs(tstats) &gt; abs(lms$coef[3,3]))</code></pre>
 <pre class="r"><code>plot(ellipse(big.mod, c(2, 6)), type = &quot;l&quot;, ylim = c(-0.13, 0))
 points(coef(big.mod)[2], coef(big.mod)[6], pch = 19)</code></pre>
 <p><img src="data:image/png;base64,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" width="672" /></p>
-<p>Any points laying outside of the</p>
+<p>Any points laying outside of the ellipse are places corresponding to a rejection of the null hypothesis.</p>
 </div>
+</div>
+<div id="bootsrap-confidence-intervals" class="section level3">
+<h3>Bootsrap Confidence Intervals</h3>
+<p>The F-based and t-based confidence regions and intervals depend on the assumption of normality. Using the bootstrap method we can get around this dependency.</p>
+<p>The method for bootstrap with respect to a linear model works in three steps.</p>
+<ol style="list-style-type: decimal">
+<li>Generate <span class="math inline">\(\epsilon^*\)</span> by sampling with replacment from the residuals</li>
+<li>Form <span class="math inline">\(y^* = X\hat{\beta} + \epsilon^*\)</span></li>
+<li>Compute <span class="math inline">\(\hat{\beta^*}\)</span></li>
+</ol>
+<p>This is implemented in the following manner in R:</p>
+<pre class="r"><code>n &lt;- 1000
+coefmat &lt;- matrix(NA, n, 6)
+resids &lt;- residuals(big.mod)
+preds &lt;- fitted(big.mod)
+
+for (i in 1:n) {
+  booty &lt;- preds + sample(resids, rep = TRUE)
+  bmod &lt;- update(big.mod, booty ~ .)
+  coefmat[i, ] &lt;- coef(big.mod)
+}
+
+colnames(coefmat) &lt;- c(&quot;Intercept&quot;, colnames(gala[, 3:7]))
+apply(coefmat, 2, function(x) quantile(x, c(.025, .975)))</code></pre>
+<pre><code>##       Intercept        Area   Elevation     Nearest      Scruz  Adjacent
+## 2.5%   7.068221 -0.02393834 0.009143961 -0.07480483 -0.2405242 0.3194648
+## 97.5%  7.068221 -0.02393834 0.009143961 -0.07480483 -0.2405242 0.3194648</code></pre>
 </div>
 
 

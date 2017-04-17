@@ -30,8 +30,8 @@ a large observed F-statistic corresponds to rejecting the null hypothesis.
 ### 3.2 Testing Examples
 #### Test of all the predictors
 This test is useful to determine if any of the predictors are useful. In this test,
-the full model \Omega is represented by  \(y = X \beta + \epsilon\), and the 
-reduced model \omega be \(y = \mu + \epsilon\) where we estimate \mu by the mean 
+the full model \(\Omega\) is represented by  \(y = X \beta + \epsilon\), and the 
+reduced model \(\omega\) be \(y = \mu + \epsilon\) where we estimate \(\mu\) by the mean 
 of the response. The corresponding null and alternate hypotheses is:
 
 $$ H_0: \beta_1 = ... = \beta_{p - 1} = 0 $$
@@ -64,8 +64,8 @@ describing the response.
 
 #### Testing one predictor
 The next test is to determine if one particular predictor can be dropped from the
-model. Thus, the null hypothesis is $ H_0: \beta_i = 0 $. In this test, \Omega 
-is a full model, and \omega is the full model, less the predictor in question. Using
+model. Thus, the null hypothesis is  \(H_0: \beta_i = 0\). In this test, \Omega 
+is a full model, and \(\omega\) is the full model, less the predictor in question. Using
 the `gala` data set, we can test to see if the `Area` predictor should be included
 in the model. 
 
@@ -127,7 +127,7 @@ included. Thus, using the p-values from the `summary()` output is not the same
 as testing two predictors at once. 
 
 #### Test we can't do
-We cannot test non-linear hypothesis, such as $ H_0: \beta_j\beta_k = 1 $ using 
+We cannot test non-linear hypothesis, such as  \(H_0: \beta_j\beta_k = 1\) using 
 the F-test method. We cannot also not test models where one is not a subspace of another. 
 
 
@@ -190,7 +190,7 @@ the predictor Scruz has no relationship with the response.
 ### Confidence Intervals for Parameters
 
 Confidence intervals provide an alternative way of expressing the uncertainty
-in our estimates of \beta. They are given by the funcntion
+in our estimates of \(\beta\). They are given by the funcntion
 
 $$ \hat{\beta} \pm t_{n-p}^{\alpha/2}se(\hat{\beta}) $$ 
 
@@ -201,7 +201,7 @@ which can be found in the `summary()` output of our function.
 ``` {r}
 summary(big.mod)
 ``` 
-Our degrees of freedom are $ n - p $, in this case $ 30 - 6 = 24 $. Taking the 
+Our degrees of freedom are  \(n - p\), in this case \(30 - 6 = 24\). Taking the 
 `Estimate` from the `summary()` output for the `Area` predictor of -.02394, and
 the `Std. Error` supplied in the same ouput, we can get the CIs in the following manner.
 
@@ -211,7 +211,7 @@ qt(.975, 30 - 6)
 ```
 
 
-If the interval contains 0, this indicates the null hypothesis of $ H_0: \beta_{Area} = 0
+If the interval contains 0, this indicates the null hypothesis of \(H_0: \beta_{Area} = 0\)
 would not be rejected at the 5% level. Even more, any value-based null hypothesis
 lying within the interval would not be rejected. We can do a similar confidence
 interval for the `Adjacent` predictor. 
@@ -242,7 +242,7 @@ library(ellipse)
 ``` 
 
 Using the full model we created before, we can examine the joint 95% confidence
-region for \beta_{Area} and \beat_{Adjacent}. 
+region for \(\beta_{Area}\) and \(\beta_{Adjacent}\). 
 
 ``` {r}
 plot(ellipse(big.mod, c(2, 6)), type = "l", ylim = c(-0.13, 0))
@@ -258,9 +258,9 @@ of normality. Using the bootstrap method we can get around this dependency.
 
 The method for bootstrap with respect to a linear model works in three steps. 
 
-1. Generate $ \epsilon^* $ by sampling with replacment from the residuals
+1. Generate \(\epsilon^*\) by sampling with replacment from the residuals
 2. Form \(y^* = X\hat{\beta} + \epsilon^*\)
-3. Compute \hat{\beta^*} 
+3. Compute \(\hat{\beta^*}\) 
 
 This is implemented in the following manner in R:
 
@@ -276,7 +276,7 @@ for (i in 1:n) {
   coefmat[i, ] <- coef(big.mod)
 }
 
-colnames(coefmat) <- c("Intercept", colnames(gala,[, 3:7]))
+colnames(coefmat) <- c("Intercept", colnames(gala[, 3:7]))
 apply(coefmat, 2, function(x) quantile(x, c(.025, .975)))
 ```
 
