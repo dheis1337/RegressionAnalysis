@@ -1,0 +1,108 @@
+---
+title: "Chapter 4 Notes"
+output: html_document
+---
+
+A linear model in production is commonly used for prediction. But how is this 
+prediction implemented? What is the mathematics behind such a prediction? Given
+a new set of predictions (observation to predict), \(x_0\), the predicted response
+is:
+
+$$ \hat{y} = x_0^T \hat{\beta}\ $$
+
+However, with this prediction comes uncertainty. The uncertainty inherent to these
+predictions are what drive the confidence and prediction intervals, which are important
+characteristics of any prediction. 
+
+### Confidence Intervals for Predictions
+There is really two types of predictions we can make using a linear model. The first
+is a prediction of the mean response and the other is a prediction of a future
+observation. For example, suppose we have a regression model that predicts the 
+rental prices of houses in a given area based on predictors such as number of bedrooms
+and closeness to a major highway. The two types of predictions we can make using 
+some \(x_0\) are:
+
+1. Suppose a specific house comes on the market with characteristics \(x_0\) $. Its
+estimated price will be \(x_0^T \beta + \epsilon\ \). Since the expected value of 
+\(\epsilon\) is 0, the predicted value is just x_0^T $ \(\hat{\beta}\) , but the variance of 
+the prediction also includes the variance of \(\epsilon\)
+
+2. Suppose we as to know what a house with characteristics \(x_{0}\) will be "on average". 
+Here our prediction remains the same, but we only need to account for the variance 
+of \(x_0^T \hat{\beta}\), since on average, the value of \(\epsilon\) is 0. 
+
+
+The predominant amount of predictions will fall under the first category. For both
+types of predictions, confidence intervals can be created. For predictions of a future
+response, we have
+
+$$ \hat{y_0} \pm t_{n-p}^{a/2}\hat{\sigma}\sqrt{1 + x_0^T(X^TX)^{-1}x_0} $$ 
+Which we will call prediction intervals. And for intervals of the mean response, we 
+have
+
+$$ \hat{y_0} \pm t_{n-p}^{a/2}\hat{\sigma}\sqrt{x_0^T(X^TX)^{-1}x_0} $$ 
+
+Which we will call confidence intervals. The important thing to note about the two
+intervals is that the prediction intervals will always be wider than the confidence 
+intervals. This is because the prediction intervals have to account for the variance
+of \(\epsilon\), whereas the confidence intervals do not. 
+
+### Predicting Body Fat
+``` {r include = FALSE}
+library(faraway)
+```
+
+In this section, we will be working with the `fat` data, from the `faraway` package. 
+We will be attempting to predict the percentage of body fat for a given male observation
+with different predictor values. 
+
+``` {r}
+data(fat)
+lmod <- lm(brozek ~ age + weight + height + neck + chest + abdom +
+hip + thigh + knee + ankle + biceps + forearm + wrist, data=fat)
+``` 
+
+Let's make a prediction for a male with median values of all predictors. To do this, 
+we need to create our \(x_0\) and then pass it as a `data.frame` to the `predict()`
+function.
+
+```{r}
+x <- model.matrix(lmod)
+x0 <- apply(x, 2, median)
+predict(lmod, new = data.frame(t(x0)))
+```
+
+To take this one step further, we can also use the `predict()` function with the 
+`interval` argument specified to get the prediction or confidence interval associated
+with each prediction. 
+
+``` {r}
+predict(lmod, new = data.frame(t(x0)), interval = "prediction")
+predict(lmod, new = data.frame(t(x0)), interval = "confidence")
+```
+
+
+As we can see, the prediction (one response) interval are much larger than the 
+confidence interval (mean response). 
+
+
+### What Can Go Wrong with Predictions?
+There are few ways that predictions can be either misleading or implemented poorly.
+
+1. The model chosen wasn't the correct model to use
+2. Quantitative extrapolation. Trying to predict data outside of the values we have
+for our predictors
+3. Qualitative prediction. Trying to predict outcomes for observations outside of 
+the population we created the model with
+4. Overconfidence due to overfitting 
+5. Black swans
+
+
+
+
+
+
+
+
+
+
