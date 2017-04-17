@@ -1,0 +1,289 @@
+---
+title: "Chapter 3 Notes"
+output: html_document
+---
+ 
+Chapter 3 is all about making inferences from a linear model. In order to
+estimate the parameters B, it is not necessary to make any distributional
+assumptions of the errors. However, if we want to build confidence intervals
+or conduct hypothesis tests for the errors, we need some distributional
+assumptions. Specifically, our errors must be i.i.d, and must also be
+distributed as N(0, sigma^2 * I), where sigma^2 is the variance, and I is
+the n x n identity matrix.
+
+### 3.1 Hypothesis Tests to Compare Models
+We can conduct a hypothesis test to determine which of two models is preferred.
+Using this framework, we test to see whehter a model with some number of predictors
+is preferred over simpler model, using a subset of the predictors of the original.
+To test this, we use an F-test. This method is all about trading model fil with
+performance. If we can use a smaller model and not sacrifice too much fit,
+why wouldn't we?
+
+In order to conduct an F-test, it is important to note how the F-statistic is comprised
+for this test. 
+
+$$ F = \frac{(RSS_\omega - RSS_\Omega) * (n - p)}{RSS_\Omega * (p - q)} $$
+Where n is the number of of observations, and p and q correspond to the number of 
+predictors in each model, with p > q (p is associated with the bigger model). Thus,
+a large observed F-statistic corresponds to rejecting the null hypothesis. 
+
+### 3.2 Testing Examples
+#### Test of all the predictors
+This test is useful to determine if any of the predictors are useful. In this test,
+the full model \Omega is represented by  \(y = X \beta + \epsilon\), and the 
+reduced model \omega be \(y = \mu + \epsilon\) where we estimate \mu by the mean 
+of the response. The corresponding null and alternate hypotheses is:
+
+$$ H_0: \beta_1 = ... = \beta_{p - 1} = 0 $$
+$$ H_A: \textrm{at least one}\ \beta_i \neq 0 $$ 
+
+In order to conduct this test in R, we fit the two models and then run the `anova()`
+function, specifying the reduced model as the first argument, follwed by the larger
+model. 
+
+``` {r eval = TRUE, echo = FALSE, warning = FALSE}
+library(faraway)
+```
+
+``` {r}
+data(gala)
+lil.mod <- lm(Species ~ 1, data = gala)
+big.mod <- lm(Species ~ Area + Elevation + Nearest + Scruz + Adjacent, data = gala)
+anova(lil.mod, big.mod)
+```
+
+From the `anova()` output, the most important information provided is the observed
+F-statistic and the P-value, for this test we received 15.699 and 6.838e-07, respectively. 
+From this output, we would thus reject the null hypothesis and give a response in 
+context of the problem: 
+
+With the p-value of 6.838e-07, we have strong evidence to reject the null hypothesis,
+and claim that at least one of the predictors in the big model is useful in 
+describing the response. 
+
+
+#### Testing one predictor
+The next test is to determine if one particular predictor can be dropped from the
+model. Thus, the null hypothesis is $ H_0: \beta_i = 0 $. In this test, \Omega 
+is a full model, and \omega is the full model, less the predictor in question. Using
+the `gala` data set, we can test to see if the `Area` predictor should be included
+in the model. 
+
+``` {r}
+lil.mod <- lm(Species ~ Nearest + Adjacent + Scruz + Elevation, data = gala)
+big.mod <- lm(Species ~ Area + Nearest + Adjacent + Scruz + Elevation, data = gala)
+
+anova(lil.mod, big.mod)
+```
+
+
+From the `anova()` output, we have an F-stat of 1.1398 and a p-value of .2963. 
+Our conclusion in the context of the problem would thus be: 
+
+With a p-value of .2963, we must fail to reject the null, and the `Area` predictor
+should be included in our model. 
+
+For one predictor tests, an alternative approach can be conducted using the t-statistic. 
+In this case, we have 
+
+$$ t_i = \frac{\hat{\beta}}{se(\hat{\beta_i})} $$ 
+
+And squaring this value results in the F-statistic. It is important to note that 
+the inclusion of the other predictors in our model will affect our results. Thus, 
+it is always important to explicitly state which other predictors are in your model
+in the null and alternative hypothesis. 
+
+$$ H_0: \beta_{Area} = 0 |\quad \beta_{Adjacent},\ \beta_{Elevation},\ \beta_{Scruz},\ \beta_{Nearest} \neq 0 $$ 
+
+$$ H_A: \beta_{Area} \neq 0 |\quad \beta_{Adjacent},\ \beta_{Elevation},\ \beta_{Scruz},\ \beta_{Nearest} \neq 0 $$ 
+
+
+#### Testing a pair of predictors
+We can also test a pair of predictors in our model. Suppose we are interested 
+in determining if the island of the current or adjacent island had any relation
+to the response. Our null hypothesis should thus be:
+
+$$ H_0: \beta_{Area} = \beta_{Adjacent} = 0 |\quad \beta_{Scruz},\ \beta_{Nearest},\ \beta_{Elevation} \neq 0 $$ 
+
+Conducting this test, we have
+
+``` {r}
+lil.mod <- lm(Species ~ Nearest + Elevation + Scruz, data = gala)
+anova(lil.mod, big.mod)
+```
+
+
+Our p-value is .00103, which gives us strong evidence to reject the null, and claim
+that at least one of the predictors - Area or Adjacent - should be included in our model.
+
+Using the `summary()` function on the full model, we can find the p-values associated with these tests.
+``` {r}
+summary(big.mod)
+``` 
+
+So, why not just always use this instead of using the `anova()` function? This is 
+because these p-values correspond to a test where each of the other predictors are
+included. Thus, using the p-values from the `summary()` output is not the same
+as testing two predictors at once. 
+
+#### Test we can't do
+We cannot test non-linear hypothesis, such as $ H_0: \beta_j\beta_k = 1 $ using 
+the F-test method. We cannot also not test models where one is not a subspace of another. 
+
+
+### Permutation Testing
+The above tests (F-statistic and t-statistic) both rely on the assumption that 
+the errors are normal. However, this is not always possible. In order to work around
+this, we can use permutation testing, which does not require the assumption of 
+normality in our errors. 
+
+A permutation testing framework works under the assumption that there is no relation
+between any of our predictors and the response, and thus the distribution of our 
+response is completely random. Using a permutation test, we in fact still use the
+F-statistic, the only difference is that we don't test our observed value against 
+an F distribution, but rather from a sampling distribution of F-statistics from 
+randomly permuted data. If the proportion of the sampled F-statistics that exceed
+our observed F-statistic is small, then we have evidence to reject the null hypothesis. 
+In this case, again, the null hypothesis is that there is no relation between the
+predictors and the response. Let's see how to implement such a permutation test. 
+
+``` {r}
+lmod <- lm(Species ~ Nearest + Scruz, data = gala)
+lms <- summary(lmod)
+
+n <- 1000
+fstats <- vector("numeric", length = n)
+
+for (i in 1:n) {
+  lmods <- lm(sample(Species) ~ Nearest + Scruz, data = gala)
+  fstats[i] <- summary(lmods)$fstat[1]
+}
+
+mean(fstats > lms$fstat[1])
+```
+
+
+We received a p-value of .55, so we must fail to reject the null hypothesis that
+there is no relationship between the response and the predictors.
+
+We can also conduct tests that involve just one predictor. In this case, we 
+simply call the `sample()` function on the predictor in question. 
+
+``` {r}
+lmod <- lm(Species ~ Nearest + Scruz, data = gala)
+lms <- summary(lmod)
+
+n <- 1000
+tstats <- vector("numeric", length = n)
+
+for (i in 1:n) {
+  lmods <- lm(Species ~ Nearest + sample(Scruz), data = gala)
+  tstats[i] <- summary(lmods)$coef[3,3]
+}
+
+mean(abs(tstats) > abs(lms$coef[3,3]))
+```
+
+Our test resulted in a p-value of .28, so we thus have no evidence to conclude that
+the predictor Scruz has no relationship with the response. 
+
+### Confidence Intervals for Parameters
+
+Confidence intervals provide an alternative way of expressing the uncertainty
+in our estimates of \beta. They are given by the funcntion
+
+$$ \hat{\beta} \pm t_{n-p}^{\alpha/2}se(\hat{\beta}) $$ 
+
+Using a given model, we can compute the CIs for a given predictor using the `qt()` 
+function, providing the probabilites and the degrees of freedom of the model 
+which can be found in the `summary()` output of our function. 
+
+``` {r}
+summary(big.mod)
+``` 
+Our degrees of freedom are $ n - p $, in this case $ 30 - 6 = 24 $. Taking the 
+`Estimate` from the `summary()` output for the `Area` predictor of -.02394, and
+the `Std. Error` supplied in the same ouput, we can get the CIs in the following manner.
+
+``` {r}
+qt(.975, 30 - 6)
+-.02394 + c(-1, 1) * 2.0639 * .02242
+```
+
+
+If the interval contains 0, this indicates the null hypothesis of $ H_0: \beta_{Area} = 0
+would not be rejected at the 5% level. Even more, any value-based null hypothesis
+lying within the interval would not be rejected. We can do a similar confidence
+interval for the `Adjacent` predictor. 
+
+``` {r}
+qt(.975, 30 - 6)
+-.07480 + c(-1, 1) * 2.0639 * .01770
+```
+
+Since this interval does not contain 0, we have evidence to believe that the null 
+should be rejected. The size of the CIs helps to determine our confidence in our
+estimates, where larger intervals correspond to less confidence. 
+
+A convenient method to get the CIs in R is by using the `confint()` function. 
+
+``` {r}
+confint(big.mod)
+```
+
+
+#### Confidence Regions
+In addition to confidence intervals, confidence regions can also be constructed. A
+confidence region is a multidimensional implementation of the same idea. When
+the region is constructed using two dimensions the results can be visualized using
+the `ellipse` package. 
+``` {r echo = FALSE}
+library(ellipse)
+``` 
+
+Using the full model we created before, we can examine the joint 95% confidence
+region for \beta_{Area} and \beat_{Adjacent}. 
+
+``` {r}
+plot(ellipse(big.mod, c(2, 6)), type = "l", ylim = c(-0.13, 0))
+points(coef(big.mod)[2], coef(big.mod)[6], pch = 19)
+```
+
+Any points laying outside of the ellipse are places corresponding to a rejection 
+of the null hypothesis. 
+
+### Bootsrap Confidence Intervals
+The F-based and t-based confidence regions and intervals depend on the assumption
+of normality. Using the bootstrap method we can get around this dependency. 
+
+The method for bootstrap with respect to a linear model works in three steps. 
+
+1. Generate $ \epsilon^* $ by sampling with replacment from the residuals
+2. Form \(y^* = X\hat{\beta} + \epsilon^*\)
+3. Compute \hat{\beta^*} 
+
+This is implemented in the following manner in R:
+
+``` {r}
+n <- 1000
+coefmat <- matrix(NA, n, 6)
+resids <- residuals(big.mod)
+preds <- fitted(big.mod)
+
+for (i in 1:n) {
+  booty <- preds + sample(resids, rep = TRUE)
+  bmod <- update(big.mod, booty ~ .)
+  coefmat[i, ] <- coef(big.mod)
+}
+
+colnames(coefmat) <- c("Intercept", colnames(gala,[, 3:7]))
+apply(coefmat, 2, function(x) quantile(x, c(.025, .975)))
+```
+
+
+
+
+
+
+
+
