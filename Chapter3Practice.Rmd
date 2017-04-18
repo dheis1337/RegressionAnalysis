@@ -1,0 +1,170 @@
+---
+title: "Chapter 3 Practice Problems"
+output: html_document
+---
+``` {r, warning = FALSE}
+library(faraway)
+```
+
+
+## 1. 
+For the prostatedata, fit a model with lpsaas the response and the other vari-
+ables as predictors:
+``` {r}
+data("prostate")
+pro.fit <- lm(lpsa ~ ., data = prostate)
+```
+
+**(a) Compute 90 and 95% CIs for the parameter associated with age. Using just**
+**these intervals, what could we have deduced about the p-value for age in the**
+**regression summary?**
+``` {r}
+confint(pro.fit, level = .9)[4, ]
+confint(pro.fit, level = .95)[4, ]
+```
+
+From the output, we can deduce that the age parameter is not statistically significant
+at the the 95% confidence level, because the interval contains 0. However, it is 
+at the 90% confidence level, because it doesn't contain 0.
+
+**(b) Compute and display a 95% joint confidence region for the parameters asso-**
+**ciated with age and lbph. Plot the origin on this display. The location of the**
+**origin on the display tells us the outcome of a certain hypothesis test. State that**
+**test and its outcome.**
+``` {r, warning = FALSE}
+library(ellipse)
+plot(ellipse(pro.fit, c(4, 5)), type = "l")
+points(0, 0)
+```
+
+
+This test corresponds to:
+
+$$ H_0: \beta_{lbph} = \beta_{age} = 0 |\ \textrm{The other regressors are in the model} $$
+And since the point is inside the ellipse, we must fail to reject the null hypothesis
+and claim that the age and lbph regression coefficients could be 0. 
+
+
+**(c) In the text, we made a permutation test corresponding to the F-test for the**
+**significance of all the predictors. Execute the permutation test corresponding**
+**to the t-test for age in this model. (Hint: {summary(g)$coef[4,3] gets you**
+**the t-statistic you need if the model is called g.)**
+
+``` {r} 
+n <- 1000
+obs <- summary(pro.fit)$coef[4, 3]
+tstat <- vector("numeric", length = n)
+
+for (i in 1:n) {
+  mod <- lm(lpsa ~ lcavol + lweight + sample(age) + lbph + svi + lcp + gleason +  pgg45, data = prostate)
+  tstat[i] <- summary(mod)$coef[4, 3]
+}
+
+mean(abs(tstat) > abs(obs))
+```
+
+
+**(d) Remove all the predictors that are not significant at the 5% level. Test this**
+**model against the original model. Which model is preferred?**
+```{r}
+summary(pro.fit)
+```
+
+From the above output, we can see that the age, lbph, lcp, gleason, and pgg45 
+regressors are not significant at the 5% level. 
+
+```{r}
+pro.lil <- lm(lpsa ~ lcavol + lweight + svi, data = prostate)
+anova(pro.lil, pro.fit)
+```
+
+From the above test, we get an F-statistic of 1.4434, and a p-value or .2167. Thus,
+we must fail to reject the null, in this case that the age, lbph, lcp, gleason, and
+pgg45 regression coefficents are 0. Thus, these regressors do not need to be in our 
+model.
+
+
+### 3. 
+Using the teengambdata, fit a model with gambleas the response and the other
+variables as predictors.
+``` {r}
+data("teengamb")
+gamb.fit <- lm(gamble ~ ., data = teengamb)
+```
+
+**(a) Which variables are statistically significant at the 5% level?**
+``` {r}
+summary(gamb.fit)
+``` 
+
+From the output, we can see that the sex and income variables are significant at 
+the 5% level. 
+
+**(b) What interpretation should be given to the coefficient for sex?**
+With similar values for the other regressors, we would expect that on average a female 
+will gamble $22.12 less each year than a male counterpart.
+
+**(c) Fit a model with just incomeas a predictor and use an F-test to compare it to the full model.**
+``` {r}
+gamb.lil <- lm(gamble ~ income, data = teengamb)
+anova(gamb.lil, gamb.fit)
+``` 
+
+
+From the output, we can see that our F-statistic is 4.1338 and our p-value is .01177. 
+Our null hypothesis in this case is:
+
+$$ H_0: \beta_{sex} = \beta_{status} = \beta_{verbal} = 0 | \textrm{The income regressor is included} $$
+
+With the p-value received, we have strong evidence to reject the null hypothesis, 
+and shold claim that at least one of the other regressors should be included in our
+model. 
+
+###4. 
+Using the `sat` data
+**(a) Fit a model with total sat score as the response and expend, ratio and**
+**salary as predictors. Test the hypothesis that ?? salary = 0. Test the hypoth-**
+**esis that ?? salary = ?? ratio = ?? expend = 0. Do any of these predictors have an**
+**effect on the response?**
+``` {r}
+data("sat")
+sat.fit <- lm(total ~ expend + ratio + salary, data = sat)
+sat.lil <- lm(total ~ expend + ratio, data = sat)
+anova(sat.lil, sat.fit)
+```
+
+From this output, we can see that the our F-statistic is 3.5285 and our p-value 
+is .06667. Thus, we don't have enough evidence to reject the null hypothesis, 
+and we should claim that the `salary` variable's regression coefficient could be 0. 
+
+``` {r}
+sat.null <- lm(total ~ 1, data = sat)
+anova(sat.null, sat.fit)
+```
+
+Fromt the above test, we received a F-statistic of 4.0662 and a p-value of .01209.
+Thus, we have moderate eveidence that we should reject the null hypothesis, 
+and claim that these regressors do have some effect on the response. 
+
+**(b) Now add takers to the model. Test the hypothesis that ?? takers = 0. Compare**
+**this model to the previous one using an F-test. Demonstrate that the F-test and**
+**t-test here are equivalent.**
+``` {r}
+sat.full <- lm(total ~ expend + ratio + salary + takers, data = sat)
+anova(sat.fit, sat.full)
+```
+
+From this test, we get a F-statistic of 157.75 and a p-value of practically 0. 
+We have thus have very strong evidence to reject the null hypothesis, and claim 
+that the `takers` variable should be included in our model. 
+
+``` {r}
+t <- summary(sat.full)$coef[5, 1] / summary(sat.full)$coef[5, 2]
+t^2 
+```
+
+From this, we can see that the t-test and the F-test result in the same statistic. 
+
+
+
+
