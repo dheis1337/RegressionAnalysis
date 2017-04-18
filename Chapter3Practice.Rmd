@@ -166,5 +166,97 @@ t^2
 From this, we can see that the t-test and the F-test result in the same statistic. 
 
 
+### 5. 
+**Find a formula relating R-squared and the F-test for the regression.**
 
+We know that RSS is defined as:
+
+$$ R^2 = 1 - \frac{RSS}{TSS} $$
+
+And that F is defined as 
+
+$$ F = \frac{(TSS- RSS) * (n - p)}{RSS * (p - 1)} $$ 
+
+Through some algebraic manipulation, we can define \(R^2\) as
+
+$$ R^2 = \frac{TSS - RSS}{TSS} $$
+
+Thus, through substitution, we have: 
+
+$$ R^2 = 1 - \frac{1}{(1 + F\ \frac{p - 1}{n - p})}$$ 
+The practical interpretation of this relationship is that a bigger \(R^2\) leads 
+to higher values of F. So, if \(R^2\) is large (meaning the model fits the data
+well), then the corresponding F-statistic will be high, which means there is 
+strong evidence to reject the null hypothesis and at least some of the coefficients
+are non-zero. 
+
+### 6. 
+**Thirty-nine MBA students were asked about happiness and how this related to**
+**their income and social life. The data are found in happy. Fit a regression model**
+**with happy as the response and the other four variables as predictors.**
+``` {r}
+data("happy")
+happy.fit <- lm(happy ~ money + sex + love + work, data = happy)
+```
+
+**(a) Which predictors were statistically significant at the 1% level?**
+``` {r}
+summary(happy.fit)
+```
+
+From the `summary()` output, we can see that the `love` predictor is the only 
+statistically significant at the 1% level. 
+
+**(b) Use the table function to produce a numerical summary of the response. What**
+**assumption used to perform the t-tests seems questionable in light of this summary?**
+``` {r}
+table(happy$happy)
+```
+
+Since our data is clearly discrete, the normality assumption is dubious. 
+
+**(c) Use the permutation procedure described in Section 3.3 to test the significance**
+**of the money predictor.**
+``` {r}
+n <- 1000
+obs <- summary(happy.fit)$coef[2, 3]
+tstat <- vector("numeric", length = n)
+
+for (i in 1:n) {
+  mod <- lm(happy ~ sample(money) + sex + love + work, data = happy)
+  tstat[i] <- summary(mod)$coef[2, 3]
+}
+
+mean(tstat > obs)
+```
+
+This test corresponds to a null hypothesis of
+
+$$ H_0: \beta_{money}\ = 0 |\ \beta_{sex},\ \beta_{love},\ \beta_{work},\ \neq 0 $$ 
+From the permutation test, we get a p-value of .028, which is strong evidence that
+we should reject the null hypothesis and conclude that the `money` predictor should
+be included our model. This result is in slight disagreement with the `summary()` 
+output of the model, which is due to the fact the the `summary()` output uses the
+t-test to determine statistical significance. Since the response is not normally 
+distributed, the t-test is not valid. 
+
+**(d) Plot a histgram of the permutation t-statistics. Make sure you use the the probability**
+**rather than frequency version of the histogram.**
+``` {r}
+hist(tstat, freq = FALSE)
+```
+
+
+**(e) Overlay an appropriate t-density over the histogram. Hint: Use grid <-**
+**seq(-3, 3, length = 300) to create a grid of values, then use the dt function**
+**to compute the t-density on this grid and the lines function to superimpose**
+**the result.**
+``` {r}
+seq(-3, 3, length = 300)
+hist(dt(c(-3, 3), df = 34))
+```
+
+**(f) Use the bootstrap procedure from Section 3.6 to compute 90% and 95% confidence**
+**intervals for bmoney. Does zero fall within these confidence intervals?**
+**Are these results consistent with previous tests?**
 

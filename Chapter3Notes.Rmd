@@ -237,7 +237,7 @@ In addition to confidence intervals, confidence regions can also be constructed.
 confidence region is a multidimensional implementation of the same idea. When
 the region is constructed using two dimensions the results can be visualized using
 the `ellipse` package. 
-``` {r echo = FALSE}
+``` {r echo = FALSE, warning = FALSE}
 library(ellipse)
 ``` 
 
@@ -245,7 +245,7 @@ Using the full model we created before, we can examine the joint 95% confidence
 region for \(\beta_{Area}\) and \(\beta_{Adjacent}\). 
 
 ``` {r}
-plot(ellipse(big.mod, c(2, 6)), type = "l", ylim = c(-0.13, 0))
+plot(ellipse(big.mod, c(2, 6)), type = "l")
 points(coef(big.mod)[2], coef(big.mod)[6], pch = 19)
 ```
 
