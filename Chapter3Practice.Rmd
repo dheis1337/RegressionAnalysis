@@ -259,4 +259,68 @@ hist(dt(c(-3, 3), df = 34))
 **(f) Use the bootstrap procedure from Section 3.6 to compute 90% and 95% confidence**
 **intervals for bmoney. Does zero fall within these confidence intervals?**
 **Are these results consistent with previous tests?**
+``` {r} 
+n <- 1000
+coefmat <- matrix(NA, n, 5)
+resids <- residuals(happy.fit)
+preds <- fitted(happy.fit)
 
+for (i in 1:n) {
+  booty <- preds + sample(resids, replace  = TRUE)
+  bmod <- update(happy.fit, booty ~ .)
+  coefmat[i, ] <- coef(bmod)
+}
+
+quantile(coefmat[, 2], c(.025, .975))
+quantile(coefmat[, 2], c(.05, .95))
+```
+
+
+###7. 
+**In the punting data, we find the average distance punted and hang times of 10**
+**punts of an American football as related to various measures of leg strength for**
+**13 volunteers.**
+``` {r}
+data("punting")
+```
+
+**(a) Fit a regression model with Distance as the response and the right and left leg**
+**strengths and flexibilities as predictors. Which predictors are significant at the**
+**5% level?**
+``` {r}
+punt.fit <- lm(Distance ~ RStr + LStr + RFlex + LFlex, data = punting)
+summary(punt.fit)
+```
+
+From the summary output, we can see that none of the regressors are significant 
+at the 5% level. 
+
+**(b) Use an F-test to determine whether collectively these four predictors have a**
+**relationship to the response.**
+``` {r}
+punt.null <- lm(Distance ~ 1, data = punting)
+anova(punt.null, punt.fit)
+```
+
+**(c) Relative to the model in (a), test whether the right and left leg strengths have**
+**the same effect.**
+``` {r}
+punt.sub <- lm(Distance ~ I(RStr + LStr), RFlex + LFlex, data = punting)
+anova(punt.sub, punt.fit)
+```
+
+**(d) Construct a 95% confidence region for (?? RStr ,?? LStr ). Explain how the test in**
+**(c) relates to this region.**
+
+**(e) Fit a model to test the hypothesis that it is total leg strength defined by adding**
+**the right and left leg strengths that is sufficient to predict the response in com-**
+**parison to using individual left and right leg strengths.**
+
+**(f) Relative to the model in (a), test whether the right and left leg flexibilities have**
+**the same effect.**
+
+**(g) Test for left-right symmetry by performing the tests in (c) and (f) simultane-**
+**ously.**
+
+**(h) Fit a model with Hang as the response and the same four predictors. Can we**
+**make a test to compare this model to that used in (a)? Explain.**
