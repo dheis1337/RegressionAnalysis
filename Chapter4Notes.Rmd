@@ -24,7 +24,7 @@ some \(x_0\) are:
 
 1. Suppose a specific house comes on the market with characteristics \(x_0\) $. Its
 estimated price will be \(x_0^T \beta + \epsilon\ \). Since the expected value of 
-\(\epsilon\) is 0, the predicted value is just x_0^T $ \(\hat{\beta}\) , but the variance of 
+\(\epsilon\) is 0, the predicted value is just \(x_0^T\)\(\hat{\beta}\) , but the variance of 
 the prediction also includes the variance of \(\epsilon\)
 
 2. Suppose we as to know what a house with characteristics \(x_{0}\) will be "on average". 
